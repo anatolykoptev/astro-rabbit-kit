@@ -232,8 +232,10 @@ const {
     transition: color .2s;
   }
   .form-back:hover { color: var(--accent, #d67a4e); }
+  /* Review rows are injected by buildReview() at runtime, so they never carry
+     the Astro scope attribute — these selectors must be :global to reach them. */
   .review { margin: 0; }
-  .review-row {
+  :global(.review-row) {
     display: grid;
     grid-template-columns: 110px 1fr auto;
     gap: 20px;
@@ -241,10 +243,10 @@ const {
     padding: 16px 0;
     border-top: 1px solid var(--hairline, #3a342f);
   }
-  .review-row:last-child { border-bottom: 1px solid var(--hairline, #3a342f); }
-  .review dt { font-family: var(--font-mono, ui-monospace, SFMono-Regular, Menlo, monospace); font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--text-muted, #8e857b); }
-  .review dd { margin: 0; font-size: 14.5px; color: var(--text-primary, #f4f1ec); overflow-wrap: anywhere; }
-  .review-edit {
+  :global(.review-row:last-child) { border-bottom: 1px solid var(--hairline, #3a342f); }
+  :global(.review dt) { font-family: var(--font-mono, ui-monospace, SFMono-Regular, Menlo, monospace); font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--text-muted, #8e857b); }
+  :global(.review dd) { margin: 0; font-size: 14.5px; color: var(--text-primary, #f4f1ec); overflow-wrap: anywhere; }
+  :global(.review-edit) {
     display: inline-flex; align-items: center; gap: 7px;
     padding: 6px 13px;
     border: 1px solid var(--hairline, #3a342f); border-radius: 999px;
@@ -253,13 +255,13 @@ const {
     color: var(--text-muted, #8e857b); cursor: pointer;
     transition: color .2s ease, border-color .2s ease, background .2s ease, transform .15s ease;
   }
-  .review-edit svg { width: 11px; height: 11px; flex: none; }
-  .review-edit:hover {
+  :global(.review-edit svg) { width: 11px; height: 11px; flex: none; }
+  :global(.review-edit:hover) {
     color: var(--accent, #d67a4e); border-color: var(--accent, #d67a4e);
     background: color-mix(in srgb, var(--accent, #d67a4e) 8%, transparent);
   }
-  .review-edit:active { transform: scale(.95); }
-  .review-edit:focus-visible { outline: 1px solid var(--accent, #d67a4e); outline-offset: 2px; }
+  :global(.review-edit:active) { transform: scale(.95); }
+  :global(.review-edit:focus-visible) { outline: 1px solid var(--accent, #d67a4e); outline-offset: 2px; }
   .apply-done .done-label { color: var(--accent, #d67a4e); }
   .apply-done .done-line {
     font-family: var(--font-display, Georgia, 'Times New Roman', serif);
