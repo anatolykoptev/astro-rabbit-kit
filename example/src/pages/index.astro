@@ -1,5 +1,5 @@
 ---
-import { StepperForm } from 'astro-rabbit-kit'
+import { Accordion, AccordionItem, Modal, SkipLink, StepperForm } from 'astro-rabbit-kit'
 ---
 
 <html lang="en">
@@ -25,7 +25,8 @@ import { StepperForm } from 'astro-rabbit-kit'
     </style>
   </head>
   <body>
-    <main>
+    <SkipLink />
+    <main id="main-content">
       <h1>StepperForm</h1>
       <p class="lede">Demo with a stubbed endpoint — submissions resolve locally and log to the console.</p>
 
@@ -45,6 +46,28 @@ import { StepperForm } from 'astro-rabbit-kit'
           { key: 'note', legend: 'Anything else?', type: 'textarea', label: 'Optional', placeholder: 'There is no right answer.' },
         ]}
       />
+
+      <h1 style="margin-top: 96px">Accordion</h1>
+      <Accordion>
+        <AccordionItem marker="01" title="Is it completely dark?">Yes. The space is fully blacked out for the duration of the retreat.</AccordionItem>
+        <AccordionItem marker="02" title="Can I stop at any time?">Always. A clear stop-any-time protocol is agreed before arrival.</AccordionItem>
+        <AccordionItem marker="03" title="Is sound healing required?">No — daily sessions are opt-in and adjustable; silence-only is respected.</AccordionItem>
+      </Accordion>
+
+      <h1 style="margin-top: 96px">Modal</h1>
+      <p>
+        <button id="demo-modal-btn" style="background:none;border:1px solid var(--hairline);border-radius:999px;padding:12px 22px;color:var(--text-primary);cursor:pointer;font:inherit">
+          Open modal
+        </button>
+      </p>
+      <Modal triggerId="demo-modal-btn" title="Screening criteria">
+        <p>A short call happens before any place is confirmed.</p>
+        <ul>
+          <li>Severe anxiety or panic in enclosed/dark spaces</li>
+          <li>History of psychosis or active suicidal ideation</li>
+          <li>Substance withdrawal or unstable medical conditions</li>
+        </ul>
+      </Modal>
     </main>
     <script>
       // Stub the endpoint so the demo succeeds without a backend.

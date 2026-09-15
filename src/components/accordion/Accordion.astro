@@ -1,0 +1,21 @@
+---
+/**
+ * Accordion — ruled list container for AccordionItem children.
+ * Progressive disclosure via native <details>/<summary>.
+ */
+---
+
+<ul class="accordion">
+  <slot />
+</ul>
+
+<style>
+  .accordion {
+    display: flex;
+    flex-direction: column;
+    padding: 0;
+    margin: 0;
+    list-style: none;
+    border-bottom: 1px solid var(--hairline, #3a342f);
+  }
+</style>

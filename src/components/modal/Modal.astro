@@ -1,0 +1,176 @@
+---
+/**
+ * Modal — accessible <dialog> with focus trap.
+ *
+ * Props:
+ *   triggerId  — id of the button/link that opens the modal (required)
+ *   title      — heading text, referenced via aria-labelledby
+ *   closeLabel — sr-only label for the close button
+ *
+ * Content goes in the default slot. Esc, backdrop click and the close
+ * button all dismiss; focus returns to the trigger.
+ */
+interface Props {
+  triggerId: string;
+  title: string;
+  closeLabel?: string;
+}
+
+const { triggerId, title, closeLabel = "Close" } = Astro.props;
+const titleId = `${triggerId}-modal-title`;
+---
+
+<dialog class="rk-modal" aria-labelledby={titleId} data-trigger={triggerId}>
+  <div class="rk-modal-inner">
+    <div class="rk-modal-head">
+      <h3 id={titleId} class="rk-modal-title" tabindex="-1">{title}</h3>
+      <button type="button" class="rk-modal-close" aria-label={closeLabel}>
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+          <path d="M2 2l12 12M14 2L2 14" stroke="currentColor" stroke-width="1.5" />
+        </svg>
+      </button>
+    </div>
+    <div class="rk-modal-body">
+      <slot />
+    </div>
+  </div>
+</dialog>
+
+<script>
+  document.querySelectorAll("dialog.rk-modal").forEach((modal) => {
+    const trigger = document.getElementById(modal.dataset.trigger);
+    const closeBtn = modal.querySelector(".rk-modal-close");
+    const inner = modal.querySelector(".rk-modal-inner");
+    if (!trigger) {
+      console.warn(`[rk-modal] trigger #${modal.dataset.trigger} not found`);
+      return;
+    }
+
+    let controller = null;
+    const focusables = () =>
+      [...modal.querySelectorAll('a, button, input, textarea, select, [tabindex]:not([tabindex="-1"])')].filter(
+        (el) => !el.disabled
+      );
+
+    const open = () => {
+      if (modal.open) return;
+      controller = new AbortController();
+      const { signal } = controller;
+      modal.showModal();
+      modal.querySelector(".rk-modal-title")?.focus();
+      document.addEventListener(
+        "keydown",
+        (e) => {
+          if (e.key !== "Tab") return;
+          const f = focusables();
+          if (!f.length) return;
+          if (document.activeElement === f[f.length - 1] && !e.shiftKey) {
+            e.preventDefault();
+            f[0].focus();
+          } else if (document.activeElement === f[0] && e.shiftKey) {
+            e.preventDefault();
+            f[f.length - 1].focus();
+          }
+        },
+        { signal }
+      );
+      modal.addEventListener("click", () => modal.close(), { signal });
+      inner?.addEventListener("click", (e) => e.stopPropagation(), { signal });
+      modal.addEventListener("close", () => { controller?.abort(); trigger.focus(); }, { signal });
+    };
+
+    trigger.addEventListener("click", open);
+    closeBtn?.addEventListener("click", () => modal.close());
+  });
+</script>
+
+<style>
+  .rk-modal {
+    position: fixed;
+    inset: 0;
+    margin: auto;
+    padding: 0;
+    border: 1px solid var(--hairline, #3a342f);
+    background: var(--bg-warm, #14110f);
+    color: var(--text-primary, #f4f1ec);
+    inline-size: min(88vw, 520px);
+    max-height: 84vh;
+    overscroll-behavior: contain;
+    opacity: 0;
+  }
+  .rk-modal[open] {
+    opacity: 1;
+  }
+  .rk-modal::backdrop {
+    background: rgba(5, 4, 3, 0.72);
+    backdrop-filter: blur(4px);
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .rk-modal {
+      translate: 0 5vh;
+      transition: display 0.25s allow-discrete, opacity 0.25s, translate 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    .rk-modal[open] {
+      translate: 0 0;
+    }
+    @starting-style {
+      .rk-modal[open] {
+        translate: 0 -3vh;
+        opacity: 0;
+      }
+    }
+  }
+  .rk-modal-inner {
+    padding: 44px 40px 40px;
+    overflow-y: auto;
+    max-height: inherit;
+  }
+  .rk-modal-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 24px;
+    margin-bottom: 22px;
+  }
+  .rk-modal-title {
+    margin: 0;
+    font-family: var(--font-display, Georgia, "Times New Roman", serif);
+    font-size: clamp(22px, 2.4vw, 28px);
+    font-weight: 500;
+    line-height: 1.2;
+    outline: none;
+  }
+  .rk-modal-close {
+    flex: none;
+    display: grid;
+    place-items: center;
+    width: 38px;
+    height: 38px;
+    border: 1px solid var(--hairline, #3a342f);
+    border-radius: 999px;
+    background: transparent;
+    color: var(--text-secondary, #a9a29a);
+    cursor: pointer;
+    transition: color 0.2s, border-color 0.2s;
+  }
+  .rk-modal-close:hover,
+  .rk-modal-close:focus-visible {
+    color: var(--accent, #d67a4e);
+    border-color: var(--accent, #d67a4e);
+  }
+  .rk-modal-body {
+    font-family: var(--font-body, system-ui, -apple-system, sans-serif);
+    font-size: 14.5px;
+    line-height: 1.7;
+    color: var(--text-secondary, #a9a29a);
+  }
+  .rk-modal-body :global(ul) {
+    margin: 0;
+    padding-left: 1.1em;
+    display: grid;
+    gap: 8px;
+  }
+  .rk-modal-body :global(p + ul) {
+    margin-top: 12px;
+  }
+</style>

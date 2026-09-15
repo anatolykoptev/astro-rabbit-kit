@@ -18,6 +18,38 @@ Or vendor it: copy `src/components/<name>/` into your project — every componen
 
 ## Components
 
+### `Accordion` + `AccordionItem`
+
+Ruled disclosure list on native `<details>/<summary>` — no JS needed. Animated via `::details-content`, honours `prefers-reduced-motion`.
+
+```astro
+<Accordion>
+  <AccordionItem marker="01" title="Is it completely dark?">Yes — …</AccordionItem>
+  <AccordionItem marker="02" title="Can I stop at any time?">Always. …</AccordionItem>
+</Accordion>
+```
+
+Props on `AccordionItem`: `title`, `marker` (leading mono index), `open`, `name` (set the same value on siblings for single-open behaviour).
+
+### `Modal`
+
+Accessible `<dialog>` with focus trap, backdrop-click and Esc dismissal, and focus return to the trigger.
+
+```astro
+<button id="screening-btn">Read the full screening criteria</button>
+<Modal triggerId="screening-btn" title="Screening criteria">
+  <p>…</p>
+</Modal>
+```
+
+### `SkipLink`
+
+Keyboard-only "skip to content" link. On activation, moves focus to `target` (default `#main-content`, falls back to the first `h1`).
+
+```astro
+<SkipLink /> <!-- first element inside <body> -->
+```
+
 ### `StepperForm`
 
 Conversational multi-step form: one question per screen, progress indicator, per-step validation, auto-advance on radio choices, draft persistence in `localStorage`, a generated review step with per-field "Change" links, honeypot, and a success state that replaces the form.
@@ -61,12 +93,25 @@ Components read these tokens and fall back to built-in defaults when absent:
 
 | Token | Fallback | Used for |
 |---|---|---|
-| `--accent` | `#d67a4e` | progress fill, focus borders, checked pills, links |
-| `--hairline` | `#3a342f` | input rules, pill borders |
+| `--accent` | `#d67a4e` | progress fill, focus borders, checked pills, markers, links |
+| `--hairline` | `#3a342f` | input rules, pill borders, accordion rules, modal border |
+| `--bg-warm` | `#14110f` | modal + skip-link surface |
 | `--text-primary` / `--text-secondary` / `--text-muted` | warm greys | text hierarchy |
-| `--font-display` | Georgia serif | step legends, success line |
-| `--font-body` | system-ui | inputs, pills |
-| `--font-mono` | ui-monospace | counters, buttons, metadata |
+| `--font-display` | Georgia serif | step legends, accordion titles, modal title |
+| `--font-body` | system-ui | inputs, pills, body copy |
+| `--font-mono` | ui-monospace | counters, buttons, markers, metadata |
+
+For light-background sections, reassign the tokens on the section class — every component follows automatically:
+
+```css
+.on-light {
+  --text-primary: #18140f;
+  --text-secondary: #57504a;
+  --text-muted: #57504a;
+  --hairline: #d8cebe;
+  --accent: #8f3f22;
+}
+```
 
 ## Development
 

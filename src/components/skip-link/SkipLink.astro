@@ -1,0 +1,54 @@
+---
+/**
+ * SkipLink — keyboard "skip to content" link.
+ *
+ * Props:
+ *   text    — link text (default "Skip to main content")
+ *   target  — CSS selector to focus (default "#main-content")
+ *
+ * Renders offscreen until focused. On Enter, moves focus to the target
+ * (or the first h1 when the target is missing).
+ */
+interface Props {
+  text?: string;
+  target?: string;
+}
+
+const { text = "Skip to main content", target = "#main-content" } = Astro.props;
+---
+
+<a class="skip-link" href={target} data-target={target}>{text}</a>
+
+<script>
+  document.querySelectorAll("a.skip-link").forEach((link) => {
+    link.addEventListener("click", () => {
+      const el = document.querySelector(link.dataset.target || "") || document.querySelector("h1");
+      if (!el) return;
+      el.setAttribute("tabindex", "-1");
+      el.focus({ preventScroll: false });
+    });
+  });
+</script>
+
+<style>
+  .skip-link {
+    position: fixed;
+    z-index: 9999;
+    top: -100vh;
+    left: 0;
+    padding: 14px 40px;
+    background: var(--bg-warm, #14110f);
+    color: var(--text-primary, #f4f1ec);
+    font-family: var(--font-mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    text-decoration: none;
+    transition: top 0.2s ease;
+  }
+  .skip-link:focus-visible {
+    top: 0;
+    outline: 2px solid var(--accent, #d67a4e);
+    outline-offset: -2px;
+  }
+</style>

@@ -5,6 +5,10 @@
   "type": "module",
   "exports": {
     ".": "./index.js",
+    "./accordion": "./src/components/accordion/Accordion.astro",
+    "./accordion-item": "./src/components/accordion/AccordionItem.astro",
+    "./modal": "./src/components/modal/Modal.astro",
+    "./skip-link": "./src/components/skip-link/SkipLink.astro",
     "./stepper-form": "./src/components/stepper-form/StepperForm.astro",
     "./package.json": "./package.json"
   },

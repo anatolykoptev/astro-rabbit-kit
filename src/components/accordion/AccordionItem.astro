@@ -1,0 +1,116 @@
+---
+/**
+ * AccordionItem — one ruled disclosure row.
+ *
+ * Props:
+ *   title   — the always-visible question/heading text
+ *   marker  — optional leading index ("01", "A.") rendered in mono
+ *   open    — start expanded
+ *   name    — group items so only one is open at a time
+ * Content goes in the default slot.
+ */
+interface Props {
+  title: string;
+  marker?: string;
+  open?: boolean;
+  name?: string;
+}
+
+const { title, marker, open = false, name } = Astro.props;
+---
+
+<li class="accordion-item">
+  <details class="accordion-details" name={name} open={open}>
+    <summary class="accordion-summary">
+      {marker && <span class="accordion-marker">{marker}</span>}
+      <span class="accordion-title">{title}</span>
+      <span class="accordion-icon" aria-hidden="true">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+          <path class="icon-h" d="M1 7h12" stroke="currentColor" stroke-width="1.5" />
+          <path class="icon-v" d="M7 1v12" stroke="currentColor" stroke-width="1.5" />
+        </svg>
+      </span>
+    </summary>
+    <div class="accordion-content">
+      <slot />
+    </div>
+  </details>
+</li>
+
+<style>
+  .accordion-details {
+    border-top: 1px solid var(--hairline, #3a342f);
+  }
+  .accordion-summary {
+    display: flex;
+    align-items: baseline;
+    gap: 24px;
+    padding: 22px 0;
+    cursor: pointer;
+    list-style: none;
+    color: var(--text-primary, #f4f1ec);
+    transition: color 0.2s ease;
+  }
+  .accordion-summary::-webkit-details-marker {
+    display: none;
+  }
+  .accordion-summary:hover,
+  .accordion-summary:focus-visible {
+    color: var(--accent, #d67a4e);
+  }
+  .accordion-marker {
+    flex: none;
+    font-family: var(--font-mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+    font-size: 10px;
+    letter-spacing: 2px;
+    color: var(--accent, #d67a4e);
+    position: relative;
+    top: -1px;
+  }
+  .accordion-title {
+    flex: 1;
+    font-family: var(--font-display, Georgia, "Times New Roman", serif);
+    font-size: clamp(17px, 1.6vw, 20px);
+    line-height: 1.35;
+  }
+  .accordion-icon {
+    flex: none;
+    align-self: center;
+    color: var(--text-muted, #8e857b);
+  }
+  .icon-v {
+    transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.3s;
+    transform-origin: center;
+  }
+  .accordion-details[open] .icon-v {
+    transform: rotate(90deg);
+    opacity: 0;
+  }
+  .accordion-content {
+    padding: 0 0 26px;
+    color: var(--text-secondary, #a9a29a);
+    font-family: var(--font-body, system-ui, -apple-system, sans-serif);
+    font-size: 14.5px;
+    line-height: 1.65;
+    max-width: 560px;
+  }
+  .accordion-details[open] .accordion-marker {
+    color: var(--text-muted, #8e857b);
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .accordion-details {
+      interpolate-size: allow-keywords;
+    }
+    .accordion-details::details-content {
+      block-size: 0;
+      overflow-y: clip;
+      opacity: 0;
+      transition: block-size 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+        content-visibility 0.35s allow-discrete, opacity 0.3s;
+    }
+    .accordion-details[open]::details-content {
+      block-size: auto;
+      opacity: 1;
+    }
+  }
+</style>

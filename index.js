@@ -1,1 +1,5 @@
+export { default as Accordion } from './src/components/accordion/Accordion.astro'
+export { default as AccordionItem } from './src/components/accordion/AccordionItem.astro'
+export { default as Modal } from './src/components/modal/Modal.astro'
+export { default as SkipLink } from './src/components/skip-link/SkipLink.astro'
 export { default as StepperForm } from './src/components/stepper-form/StepperForm.astro'
