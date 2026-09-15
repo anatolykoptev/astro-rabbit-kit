@@ -278,7 +278,9 @@ const {
   .consent-field { margin-top: 26px; }
   .consent {
     display: flex; gap: 14px; align-items: flex-start;
-    font-size: 13.5px; line-height: 1.55; color: var(--text-secondary, #b5afa6);
+    font-family: inherit; font-size: 13.5px; line-height: 1.55;
+    text-transform: none; letter-spacing: 0;
+    color: var(--text-secondary, #b5afa6);
     cursor: pointer;
   }
   .consent input {
@@ -300,8 +302,9 @@ const {
   }
   .consent input:checked::after { opacity: 1; }
   .consent input:focus-visible { outline: 1px solid var(--accent, #d67a4e); outline-offset: 2px; }
-  .consent a { color: var(--accent, #d67a4e); text-decoration: none; border-bottom: 1px solid color-mix(in srgb, var(--accent, #d67a4e) 40%, transparent); }
-  .consent a:hover { border-bottom-color: var(--accent, #d67a4e); }
+  /* Links inside set:html consent text never carry the scope attribute. */
+  :global(.consent a) { color: var(--accent, #d67a4e); text-decoration: none; border-bottom: 1px solid color-mix(in srgb, var(--accent, #d67a4e) 40%, transparent); }
+  :global(.consent a:hover) { border-bottom-color: var(--accent, #d67a4e); }
   .apply-done .done-label { color: var(--accent, #d67a4e); }
   .apply-done .done-line {
     font-family: var(--font-display, Georgia, 'Times New Roman', serif);
