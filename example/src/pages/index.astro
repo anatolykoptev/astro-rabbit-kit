@@ -1,0 +1,61 @@
+---
+import { StepperForm } from 'astro-rabbit-kit'
+---
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>astro-rabbit-kit — StepperForm demo</title>
+    <style>
+      :root {
+        --accent: #d67a4e;
+        --hairline: #3a342f;
+        --text-primary: #f4f1ec;
+        --text-secondary: #a9a29a;
+        --text-muted: #8e857b;
+        --font-display: Georgia, 'Times New Roman', serif;
+        --font-mono: ui-monospace, SFMono-Regular, Menlo, monospace;
+      }
+      body { background: #14110f; margin: 0; font-family: var(--font-body, system-ui); }
+      main { max-width: 620px; margin: 0 auto; padding: 80px 24px; }
+      h1 { font-family: var(--font-display); font-weight: 500; color: var(--text-primary); }
+      p.lede { color: var(--text-secondary); margin-bottom: 64px; }
+      /* demo endpoint stub: intercepts the POST so no backend is needed */
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>StepperForm</h1>
+      <p class="lede">Demo with a stubbed endpoint — submissions resolve locally and log to the console.</p>
+
+      <StepperForm
+        id="demo"
+        endpoint="/demo-endpoint"
+        source="rabbit-kit-demo"
+        noteTemplate="[demo] {name} | {plan} | {note}"
+        submitLabel="Send it"
+        doneLabel="Received"
+        doneLine="Demo complete — check the console for the payload."
+        doneFoot="Nothing was actually sent anywhere."
+        steps={[
+          { key: 'name', legend: 'First, what should we call you?', label: 'Full name', placeholder: 'Your name', autocomplete: 'name' },
+          { key: 'email', legend: 'Where can we reach you?', type: 'email', label: 'Email', placeholder: 'you@email.com', autocomplete: 'email', required: true, error: 'Check that email once more.' },
+          { key: 'plan', legend: 'Pick a plan', type: 'pills', options: ['Hobby', 'Pro', 'Not sure yet'], review: 'Plan' },
+          { key: 'note', legend: 'Anything else?', type: 'textarea', label: 'Optional', placeholder: 'There is no right answer.' },
+        ]}
+      />
+    </main>
+    <script>
+      // Stub the endpoint so the demo succeeds without a backend.
+      const realFetch = window.fetch.bind(window)
+      window.fetch = (url, opts) => {
+        if (String(url).includes('demo-endpoint')) {
+          console.log('[demo payload]', JSON.parse(opts.body))
+          return Promise.resolve(new Response('{"ok":true}', { status: 200 }))
+        }
+        return realFetch(url, opts)
+      }
+    </script>
+  </body>
+</html>

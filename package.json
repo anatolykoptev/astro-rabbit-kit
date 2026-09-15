@@ -1,0 +1,27 @@
+{
+  "name": "astro-rabbit-kit",
+  "version": "0.1.0",
+  "description": "A kit of composable Astro components — copy-friendly primitives with scoped styles and vanilla-JS behaviour.",
+  "type": "module",
+  "exports": {
+    ".": "./index.js",
+    "./stepper-form": "./src/components/stepper-form/StepperForm.astro",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "index.js",
+    "src",
+    "README.md",
+    "LICENSE"
+  ],
+  "keywords": [
+    "astro",
+    "components",
+    "ui-kit",
+    "forms"
+  ],
+  "license": "MIT",
+  "peerDependencies": {
+    "astro": "^4.0.0 || ^5.0.0"
+  }
+}

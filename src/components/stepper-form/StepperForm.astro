@@ -1,0 +1,390 @@
+---
+/**
+ * StepperForm — conversational multi-step form primitive.
+ *
+ * Props:
+ *   id            — instance id, namespaces the localStorage draft key
+ *   endpoint      — POST target for the JSON payload
+ *   source        — value sent as `source`
+ *   noteTemplate  — note string with {fieldKey} interpolation
+ *   submitLabel   — label of the final-step button
+ *   reviewLabel   — legend of the auto-generated review step
+ *   doneLabel / doneLine / doneFoot — success state copy
+ *   steps         — array of step configs:
+ *     { key, legend, label?, review?, type?: text|email|textarea|pills,
+ *       placeholder?, autocomplete?, inputmode?, required?, error?,
+ *       options?: string[], defaultValue?: string, rows?: number }
+ */
+interface StepCfg {
+  key: string;
+  legend: string;
+  label?: string;
+  review?: string;
+  type?: "text" | "email" | "textarea" | "pills";
+  placeholder?: string;
+  autocomplete?: string;
+  inputmode?: string;
+  required?: boolean;
+  error?: string;
+  options?: string[];
+  defaultValue?: string;
+  rows?: number;
+}
+
+interface Props {
+  id?: string;
+  endpoint: string;
+  source: string;
+  noteTemplate?: string;
+  submitLabel?: string;
+  reviewLabel?: string;
+  doneLabel?: string;
+  doneLine?: string;
+  doneFoot?: string;
+  steps: StepCfg[];
+}
+
+const {
+  id = "stepper",
+  endpoint,
+  source,
+  noteTemplate = "{note}",
+  submitLabel = "Send",
+  reviewLabel = "Everything in order?",
+  doneLabel = "Received",
+  doneLine = "We will be in touch.",
+  doneFoot = "",
+  steps = [],
+} = Astro.props;
+---
+
+<form
+  class="stepper"
+  id={`stepper-${id}`}
+  data-endpoint={endpoint}
+  data-source={source}
+  data-note={noteTemplate}
+  data-draft={`dr-stepper-${id}`}
+  data-submit-label={submitLabel}
+  novalidate
+>
+  <div class="form-progress">
+    <span class="mono step-count">01 / {String(steps.length + 1).padStart(2, "0")}</span>
+    <div class="form-bar"><i class="step-bar-fill"></i></div>
+  </div>
+
+  {steps.map((s, i) => (
+    <fieldset class={`step${i === 0 ? " is-active" : ""}`} data-key={s.key} data-review={s.review || s.label || s.legend} data-required={s.required ? "1" : undefined} data-error={s.error || ""}>
+      <legend>{s.legend}</legend>
+      {s.type === "pills" ? (
+        <div class="program-pills">
+          {s.options?.map((o) => (
+            <label>
+              <input type="radio" name={s.key} value={o} checked={o === (s.defaultValue || s.options?.[0])} />
+              {o}
+            </label>
+          ))}
+        </div>
+      ) : s.type === "textarea" ? (
+        <div class="field">
+          <label for={`${id}-${s.key}`}>{s.label}</label>
+          <textarea id={`${id}-${s.key}`} name={s.key} placeholder={s.placeholder} rows={s.rows || 4}></textarea>
+          <p class="field-err" role="alert"></p>
+        </div>
+      ) : (
+        <div class="field">
+          <label for={`${id}-${s.key}`}>{s.label}</label>
+          <input
+            type={s.type === "email" ? "email" : "text"}
+            id={`${id}-${s.key}`}
+            name={s.key}
+            placeholder={s.placeholder}
+            autocomplete={s.autocomplete}
+            inputmode={s.inputmode}
+            enterkeyhint="next"
+          />
+          <p class="field-err" role="alert"></p>
+        </div>
+      )}
+    </fieldset>
+  ))}
+
+  <fieldset class="step" data-review-step>
+    <legend>{reviewLabel}</legend>
+    <dl class="review"></dl>
+  </fieldset>
+
+  <div class="hp-field" aria-hidden="true">
+    <label for={`${id}-website`}>Website</label>
+    <input type="text" id={`${id}-website`} name="website" tabindex="-1" autocomplete="off" />
+  </div>
+
+  <div class="form-nav">
+    <button type="button" class="form-back" hidden>← Back</button>
+    <button type="button" class="btn btn-solid step-next">Continue</button>
+  </div>
+  <div class="form-status" role="status" aria-live="polite"></div>
+</form>
+<div class="apply-done" hidden>
+  <p class="mono done-label">{doneLabel}</p>
+  <p class="done-line">{doneLine}</p>
+  {doneFoot && <p class="form-foot">{doneFoot}</p>}
+</div>
+
+<style>
+  .field { margin-bottom: 34px; }
+  .field label {
+    display: block;
+    font-family: var(--font-mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+    font-size: 10px;
+    letter-spacing: 2.4px;
+    text-transform: uppercase;
+    color: var(--text-muted, #8e857b);
+    margin-bottom: 6px;
+  }
+  .field input, .field textarea {
+    width: 100%;
+    background: transparent;
+    border: 0;
+    border-bottom: 1px solid var(--hairline, #3a342f);
+    color: var(--text-primary, #f4f1ec);
+    font-family: var(--font-body, system-ui, -apple-system, sans-serif);
+    font-size: 19px;
+    padding: 12px 0 16px;
+    outline: none;
+    transition: border-color .2s ease;
+  }
+  .field input:focus, .field textarea:focus { border-color: var(--accent, #d67a4e); }
+  .field textarea { resize: vertical; min-height: 84px; }
+  .field-err { margin: 10px 0 0; font-size: 12.5px; color: #d98a7a; }
+
+  .program-pills { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 8px; }
+  .program-pills label {
+    border: 1px solid var(--hairline, #3a342f);
+    border-radius: 999px;
+    padding: 11px 20px;
+    font-family: var(--font-body, system-ui, -apple-system, sans-serif);
+    font-size: 13.5px;
+    color: var(--text-secondary, #a9a29a);
+    cursor: pointer;
+    transition: all .2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+  }
+  .program-pills label::before {
+    content: "";
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    border: 1px solid var(--hairline, #3a342f);
+    transition: all .2s ease;
+  }
+  .program-pills input { position: absolute; opacity: 0; pointer-events: none; }
+  .program-pills label:has(input:checked) { border-color: var(--accent, #d67a4e); color: var(--text-primary, #f4f1ec); }
+  .program-pills label:has(input:checked)::before { background: var(--accent, #d67a4e); border-color: var(--accent, #d67a4e); }
+
+  .hp-field { position: absolute; left: -9999px; opacity: 0; height: 0; overflow: hidden; }
+  .form-foot { margin-top: 30px; font-size: 12.5px; color: var(--text-muted, #8e857b); line-height: 1.6; max-width: 420px; }
+  .form-status { margin-top: 20px; font-size: 14px; min-height: 20px; }
+  .form-status.err { color: #d98a7a; }
+  .stepper .btn[disabled] { opacity: .55; cursor: default; }
+
+  .stepper { min-height: 460px; }
+  .form-progress { display: flex; align-items: center; gap: 22px; margin-bottom: 56px; }
+  .form-progress .mono { color: var(--accent, #d67a4e); flex: none; }
+  .form-bar { flex: 1; height: 1px; background: var(--hairline, #3a342f); position: relative; }
+  .form-bar i {
+    position: absolute; left: 0; top: -0.5px;
+    height: 2px; width: 20%;
+    background: var(--accent, #d67a4e);
+    transition: width .45s cubic-bezier(.22, 1, .36, 1);
+  }
+  .step { display: none; border: 0; padding: 0; margin: 0; min-height: 240px; }
+  .step.is-active { display: block; animation: stepIn .5s cubic-bezier(.22, 1, .36, 1); }
+  @keyframes stepIn {
+    from { opacity: 0; transform: translateY(14px); }
+    to { opacity: 1; transform: none; }
+  }
+  @media (prefers-reduced-motion: reduce) { .step.is-active { animation: none; } }
+  .step legend {
+    font-family: var(--font-display, Georgia, 'Times New Roman', serif);
+    font-size: clamp(24px, 2.2vw, 32px);
+    line-height: 1.2;
+    color: var(--text-primary, #f4f1ec);
+    padding: 0;
+    margin: 0 0 40px;
+    max-width: 460px;
+  }
+  .form-nav { display: flex; align-items: center; gap: 26px; margin-top: 40px; }
+  .form-back {
+    background: none;
+    border: 0;
+    font-family: var(--font-mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--text-muted, #8e857b);
+    cursor: pointer;
+    padding: 10px 0;
+    transition: color .2s;
+  }
+  .form-back:hover { color: var(--accent, #d67a4e); }
+  .review { margin: 0; }
+  .review-row {
+    display: grid;
+    grid-template-columns: 110px 1fr auto;
+    gap: 20px;
+    align-items: baseline;
+    padding: 16px 0;
+    border-top: 1px solid var(--hairline, #3a342f);
+  }
+  .review-row:last-child { border-bottom: 1px solid var(--hairline, #3a342f); }
+  .review dt { font-family: var(--font-mono, ui-monospace, SFMono-Regular, Menlo, monospace); font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--text-muted, #8e857b); }
+  .review dd { margin: 0; font-size: 14.5px; color: var(--text-primary, #f4f1ec); overflow-wrap: anywhere; }
+  .review-edit {
+    background: none; border: 0; padding: 0;
+    font-family: var(--font-mono, ui-monospace, SFMono-Regular, Menlo, monospace); font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase;
+    color: var(--accent, #d67a4e); cursor: pointer;
+  }
+  .review-edit:hover { text-decoration: underline; }
+  .apply-done .done-label { color: var(--accent, #d67a4e); }
+  .apply-done .done-line {
+    font-family: var(--font-display, Georgia, 'Times New Roman', serif);
+    font-style: italic;
+    font-size: clamp(26px, 2.6vw, 36px);
+    margin: 26px 0 0;
+    max-width: 460px;
+  }
+  .mono { font-family: var(--font-mono, ui-monospace, SFMono-Regular, Menlo, monospace); font-size: 11px; letter-spacing: 2.5px; text-transform: uppercase; color: var(--text-muted, #8e857b); }
+</style>
+
+<script>
+  document.querySelectorAll("form[data-endpoint].stepper").forEach((form) => {
+    const steps = [...form.querySelectorAll(".step")];
+    const count = form.querySelector(".step-count");
+    const bar = form.querySelector(".step-bar-fill");
+    const nextBtn = form.querySelector(".step-next");
+    const backBtn = form.querySelector(".form-back");
+    const status = form.querySelector(".form-status");
+    const review = form.querySelector(".review");
+    const done = form.nextElementSibling;
+    const DRAFT_KEY = form.dataset.draft;
+    let cur = 0;
+
+    const val = (n) => String(new FormData(form).get(n) || "").trim();
+    const saveDraft = () => {
+      try {
+        const d = {};
+        steps.forEach((s) => { if (s.dataset.key) d[s.dataset.key] = val(s.dataset.key); });
+        localStorage.setItem(DRAFT_KEY, JSON.stringify(d));
+      } catch {}
+    };
+    try {
+      const d = JSON.parse(localStorage.getItem(DRAFT_KEY) || "null");
+      if (d) Object.entries(d).forEach(([k, v]) => { if (form.elements[k]) form.elements[k].value = v; });
+    } catch {}
+
+    const errEl = (i) => steps[i].querySelector(".field-err");
+    const show = (i) => {
+      cur = i;
+      steps.forEach((s, j) => s.classList.toggle("is-active", j === i));
+      count.textContent = `${String(i + 1).padStart(2, "0")} / ${String(steps.length).padStart(2, "0")}`;
+      bar.style.width = `${((i + 1) / steps.length) * 100}%`;
+      backBtn.hidden = i === 0;
+      nextBtn.textContent = i === steps.length - 1 ? form.dataset.submitLabel : "Continue";
+      status.textContent = "";
+      const input = steps[i].querySelector("input:not([name=website]):not([type=radio]), textarea");
+      if (input) input.focus({ preventScroll: true });
+    };
+
+    const stepOk = (i) => {
+      const s = steps[i];
+      const err = errEl(i);
+      const input = s.querySelector("input:not([name=website]), textarea");
+      if (!input || input.type === "radio") return true;
+      if (input.type === "email" && !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(val(input.name))) {
+        if (err) err.textContent = s.dataset.error || "Please check this field.";
+        input.focus();
+        return false;
+      }
+      if (s.dataset.required === "1" && !val(input.name)) {
+        if (err) err.textContent = s.dataset.error || "This field is required.";
+        input.focus();
+        return false;
+      }
+      if (err) err.textContent = "";
+      return true;
+    };
+
+    const buildReview = () => {
+      review.innerHTML = steps
+        .filter((s) => s.dataset.key)
+        .map((s, i) => `<div class="review-row"><dt>${s.dataset.review}</dt><dd>${(val(s.dataset.key) || "—").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/\n/g, "<br>")}</dd><button type="button" class="review-edit" data-goto="${i}">Change</button></div>`)
+        .join("");
+    };
+
+    const goNext = () => {
+      if (!stepOk(cur)) return;
+      if (cur === steps.length - 1) return submit();
+      if (cur === steps.length - 2) buildReview();
+      show(cur + 1);
+    };
+
+    nextBtn.addEventListener("click", goNext);
+    backBtn.addEventListener("click", () => show(cur - 1));
+    form.addEventListener("submit", (e) => e.preventDefault());
+    form.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" && e.target.tagName !== "TEXTAREA") { e.preventDefault(); goNext(); }
+    });
+    form.addEventListener("input", saveDraft);
+    review.addEventListener("click", (e) => {
+      const b = e.target.closest("[data-goto]");
+      if (b) show(Number(b.dataset.goto));
+    });
+    form.addEventListener("change", (e) => {
+      if (e.target.type === "radio" && steps[cur] === e.target.closest(".step")) {
+        saveDraft();
+        setTimeout(goNext, 260);
+      }
+    });
+    steps.forEach((s, i) => {
+      const input = s.querySelector("input[type=email]");
+      if (input) input.addEventListener("blur", () => {
+        const err = errEl(i);
+        if (err && val(input.name) && !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(val(input.name)))
+          err.textContent = s.dataset.error || "Please check this field.";
+      });
+    });
+
+    async function submit() {
+      nextBtn.disabled = true;
+      status.textContent = "";
+      const note = form.dataset.note.replace(/\{(\w+)\}/g, (_, k) => val(k) || "—");
+      const emailInput = form.querySelector("input[type=email]");
+      try {
+        const res = await fetch(form.dataset.endpoint, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            email: emailInput ? val(emailInput.name) : "",
+            website: val("website"),
+            source: form.dataset.source,
+            note,
+          }),
+        });
+        if (!res.ok) throw new Error(String(res.status));
+        try { localStorage.removeItem(DRAFT_KEY); } catch {}
+        form.hidden = true;
+        if (done && done.classList.contains("apply-done")) done.hidden = false;
+      } catch {
+        status.textContent = "Something went wrong sending it. Please try again in a moment.";
+        status.className = "form-status err";
+      } finally {
+        nextBtn.disabled = false;
+      }
+    }
+
+    steps[0].classList.add("is-active");
+  });
+
+</script>
