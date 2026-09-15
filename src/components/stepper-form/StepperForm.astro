@@ -247,20 +247,19 @@ const {
   :global(.review dt) { font-family: var(--font-mono, ui-monospace, SFMono-Regular, Menlo, monospace); font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--text-muted, #8e857b); }
   :global(.review dd) { margin: 0; font-size: 14.5px; color: var(--text-primary, #f4f1ec); overflow-wrap: anywhere; }
   :global(.review-edit) {
-    display: inline-flex; align-items: center; gap: 7px;
-    padding: 6px 13px;
-    border: 1px solid var(--hairline, #3a342f); border-radius: 999px;
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 30px; height: 30px;
+    border: 0; border-radius: 50%;
     background: transparent;
-    font-family: var(--font-mono, ui-monospace, SFMono-Regular, Menlo, monospace); font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase;
     color: var(--text-muted, #8e857b); cursor: pointer;
-    transition: color .2s ease, border-color .2s ease, background .2s ease, transform .15s ease;
+    transition: color .2s ease, background .2s ease, transform .15s ease;
   }
-  :global(.review-edit svg) { width: 11px; height: 11px; flex: none; }
+  :global(.review-edit svg) { width: 13px; height: 13px; }
   :global(.review-edit:hover) {
-    color: var(--accent, #d67a4e); border-color: var(--accent, #d67a4e);
-    background: color-mix(in srgb, var(--accent, #d67a4e) 8%, transparent);
+    color: var(--accent, #d67a4e);
+    background: color-mix(in srgb, var(--accent, #d67a4e) 10%, transparent);
   }
-  :global(.review-edit:active) { transform: scale(.95); }
+  :global(.review-edit:active) { transform: scale(.9); }
   :global(.review-edit:focus-visible) { outline: 1px solid var(--accent, #d67a4e); outline-offset: 2px; }
   .apply-done .done-label { color: var(--accent, #d67a4e); }
   .apply-done .done-line {
@@ -334,7 +333,7 @@ const {
     const buildReview = () => {
       review.innerHTML = steps
         .filter((s) => s.dataset.key)
-        .map((s, i) => `<div class="review-row"><dt>${s.dataset.review}</dt><dd>${(val(s.dataset.key) || "—").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/\n/g, "<br>")}</dd><button type="button" class="review-edit" data-goto="${i}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 3a2.8 2.8 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>Edit</button></div>`)
+        .map((s, i) => `<div class="review-row"><dt>${s.dataset.review}</dt><dd>${(val(s.dataset.key) || "—").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/\n/g, "<br>")}</dd><button type="button" class="review-edit" data-goto="${i}" aria-label="Edit"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 3a2.8 2.8 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg></button></div>`)
         .join("");
     };
 
