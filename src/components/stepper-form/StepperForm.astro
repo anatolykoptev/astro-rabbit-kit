@@ -37,6 +37,9 @@ interface Props {
   endpoint: string;
   source: string;
   noteTemplate?: string;
+  /** HTML rendered as the consent checkbox label on the review step (e.g.
+      links to /privacy and /terms). Submit is blocked until checked. */
+  consent?: string;
   submitLabel?: string;
   reviewLabel?: string;
   doneLabel?: string;
@@ -50,6 +53,7 @@ const {
   endpoint,
   source,
   noteTemplate = "{note}",
+  consent,
   submitLabel = "Send",
   reviewLabel = "Everything in order?",
   doneLabel = "Received",
@@ -114,6 +118,15 @@ const {
   <fieldset class="step" data-review-step>
     <legend>{reviewLabel}</legend>
     <dl class="review"></dl>
+    {consent && (
+      <div class="field consent-field">
+        <label class="consent">
+          <input type="checkbox" name="consent" value="agreed" />
+          <span set:html={consent} />
+        </label>
+        <p class="field-err" role="alert"></p>
+      </div>
+    )}
   </fieldset>
 
   <div class="hp-field" aria-hidden="true">
@@ -261,6 +274,34 @@ const {
   }
   :global(.review-edit:active) { transform: scale(.9); }
   :global(.review-edit:focus-visible) { outline: 1px solid var(--accent, #d67a4e); outline-offset: 2px; }
+
+  .consent-field { margin-top: 26px; }
+  .consent {
+    display: flex; gap: 14px; align-items: flex-start;
+    font-size: 13.5px; line-height: 1.55; color: var(--text-secondary, #b5afa6);
+    cursor: pointer;
+  }
+  .consent input {
+    appearance: none; flex: none;
+    width: 18px; height: 18px; margin-top: 2px;
+    border: 1px solid var(--hairline, #3a342f); border-radius: 5px;
+    background: transparent; cursor: pointer;
+    display: grid; place-content: center;
+    transition: border-color .2s ease, background .2s ease;
+  }
+  .consent input::after {
+    content: ""; width: 10px; height: 6px;
+    border-left: 2px solid #fff; border-bottom: 2px solid #fff;
+    transform: rotate(-45deg) translateY(-1px);
+    opacity: 0;
+  }
+  .consent input:checked {
+    border-color: var(--accent, #d67a4e); background: var(--accent, #d67a4e);
+  }
+  .consent input:checked::after { opacity: 1; }
+  .consent input:focus-visible { outline: 1px solid var(--accent, #d67a4e); outline-offset: 2px; }
+  .consent a { color: var(--accent, #d67a4e); text-decoration: none; border-bottom: 1px solid color-mix(in srgb, var(--accent, #d67a4e) 40%, transparent); }
+  .consent a:hover { border-bottom-color: var(--accent, #d67a4e); }
   .apply-done .done-label { color: var(--accent, #d67a4e); }
   .apply-done .done-line {
     font-family: var(--font-display, Georgia, 'Times New Roman', serif);
@@ -316,6 +357,15 @@ const {
       const err = errEl(i);
       const input = s.querySelector("input:not([name=website]), textarea");
       if (!input || input.type === "radio") return true;
+      if (input.type === "checkbox") {
+        if (!input.checked) {
+          if (err) err.textContent = s.dataset.error || "Please agree to continue.";
+          input.focus();
+          return false;
+        }
+        if (err) err.textContent = "";
+        return true;
+      }
       if (input.type === "email" && !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(val(input.name))) {
         if (err) err.textContent = s.dataset.error || "Please check this field.";
         input.focus();
