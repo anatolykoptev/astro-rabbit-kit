@@ -42,6 +42,22 @@ Accessible `<dialog>` with focus trap, backdrop-click and Esc dismissal, and foc
 </Modal>
 ```
 
+**Multiple triggers** — use `trigger` with a CSS selector instead of `triggerId`:
+
+```astro
+<Modal trigger="[data-open-apply]" title="Apply">…</Modal>
+```
+
+**Bottom sheet** — `sheet` docks the dialog to the bottom edge on narrow screens (≤700px), adds a grab handle and swipe-down-to-close:
+
+```astro
+<Modal trigger="[data-open-apply]" title="Apply" sheet>
+  <StepperForm … />
+</Modal>
+```
+
+On open, the dialog emits a bubbling `rkmodal:open` CustomEvent with `{ trigger }` in `detail` — useful for pre-filling fields from `data-*` attributes on the clicked trigger.
+
 ### `SkipLink`
 
 Keyboard-only "skip to content" link. On activation, moves focus to `target` (default `#main-content`, falls back to the first `h1`).

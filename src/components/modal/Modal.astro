@@ -3,24 +3,37 @@
  * Modal — accessible <dialog> with focus trap.
  *
  * Props:
- *   triggerId  — id of the button/link that opens the modal (required)
+ *   triggerId  — id of one trigger element (legacy single-trigger API)
+ *   trigger    — CSS selector matching any number of trigger elements
  *   title      — heading text, referenced via aria-labelledby
  *   closeLabel — sr-only label for the close button
+ *   sheet      — dock to the bottom edge as a mobile-style sheet on
+ *                narrow screens, with a grab handle and swipe-to-close
  *
- * Content goes in the default slot. Esc, backdrop click and the close
- * button all dismiss; focus returns to the trigger.
+ * Content goes in the default slot. Esc, backdrop click, the close
+ * button and (in sheet mode) a downward swipe all dismiss; focus
+ * returns to the trigger. On open, a `rkmodal:open` CustomEvent
+ * bubbles from the dialog with { trigger } in detail.
  */
 interface Props {
-  triggerId: string;
+  triggerId?: string;
+  trigger?: string;
   title: string;
   closeLabel?: string;
+  sheet?: boolean;
 }
 
-const { triggerId, title, closeLabel = "Close" } = Astro.props;
-const titleId = `${triggerId}-modal-title`;
+const { triggerId, trigger, title, closeLabel = "Close", sheet = false } = Astro.props;
+const titleId = `${(triggerId || trigger || "modal").replace(/[^a-zA-Z0-9_-]/g, "")}-modal-title`;
 ---
 
-<dialog class="rk-modal" aria-labelledby={titleId} data-trigger={triggerId}>
+<dialog
+  class:list={["rk-modal", sheet && "sheet"]}
+  aria-labelledby={titleId}
+  data-trigger={triggerId || ""}
+  data-triggers={trigger || ""}
+>
+  {sheet && <div class="rk-sheet-handle" aria-hidden="true"><i></i></div>}
   <div class="rk-modal-inner">
     <div class="rk-modal-head">
       <h3 id={titleId} class="rk-modal-title" tabindex="-1">{title}</h3>
@@ -38,26 +51,32 @@ const titleId = `${triggerId}-modal-title`;
 
 <script>
   document.querySelectorAll("dialog.rk-modal").forEach((modal) => {
-    const trigger = document.getElementById(modal.dataset.trigger);
     const closeBtn = modal.querySelector(".rk-modal-close");
     const inner = modal.querySelector(".rk-modal-inner");
-    if (!trigger) {
-      console.warn(`[rk-modal] trigger #${modal.dataset.trigger} not found`);
+    const triggers = [
+      ...(modal.dataset.trigger ? [document.getElementById(modal.dataset.trigger)] : []),
+      ...(modal.dataset.triggers ? [...document.querySelectorAll(modal.dataset.triggers)] : []),
+    ].filter(Boolean);
+    if (!triggers.length) {
+      console.warn(`[rk-modal] no triggers found for`, modal);
       return;
     }
 
     let controller = null;
+    let lastTrigger = null;
     const focusables = () =>
       [...modal.querySelectorAll('a, button, input, textarea, select, [tabindex]:not([tabindex="-1"])')].filter(
         (el) => !el.disabled
       );
 
-    const open = () => {
+    const open = (trigger) => {
       if (modal.open) return;
+      lastTrigger = trigger;
       controller = new AbortController();
       const { signal } = controller;
       modal.showModal();
       modal.querySelector(".rk-modal-title")?.focus();
+      modal.dispatchEvent(new CustomEvent("rkmodal:open", { bubbles: true, detail: { trigger } }));
       document.addEventListener(
         "keydown",
         (e) => {
@@ -76,11 +95,46 @@ const titleId = `${triggerId}-modal-title`;
       );
       modal.addEventListener("click", () => modal.close(), { signal });
       inner?.addEventListener("click", (e) => e.stopPropagation(), { signal });
-      modal.addEventListener("close", () => { controller?.abort(); trigger.focus(); }, { signal });
+      modal.addEventListener("close", () => { controller?.abort(); lastTrigger?.focus(); }, { signal });
     };
 
-    trigger.addEventListener("click", open);
+    triggers.forEach((t) =>
+      t.addEventListener("click", (e) => {
+        if (t.tagName === "A" || t.closest("a")) e.preventDefault();
+        open(t);
+      })
+    );
     closeBtn?.addEventListener("click", () => modal.close());
+
+    // Bottom-sheet: drag the handle (or the head area) down to close.
+    if (modal.classList.contains("sheet")) {
+      const grabZone = modal.querySelector(".rk-sheet-handle") || modal.querySelector(".rk-modal-head");
+      let startY = 0, dy = 0, dragging = false;
+      grabZone?.addEventListener("pointerdown", (e) => {
+        dragging = true;
+        startY = e.clientY;
+        dy = 0;
+        grabZone.setPointerCapture(e.pointerId);
+      });
+      grabZone?.addEventListener("pointermove", (e) => {
+        if (!dragging) return;
+        dy = Math.max(0, e.clientY - startY);
+        modal.style.transition = "none";
+        modal.style.translate = `0 ${dy}px`;
+      });
+      const endDrag = () => {
+        if (!dragging) return;
+        dragging = false;
+        modal.style.transition = "translate .28s cubic-bezier(.22,1,.36,1)";
+        if (dy > 90) {
+          modal.close();
+        }
+        modal.style.translate = "";
+      };
+      grabZone?.addEventListener("pointerup", endDrag);
+      grabZone?.addEventListener("pointercancel", endDrag);
+      modal.addEventListener("close", () => { modal.style.translate = ""; });
+    }
   });
 </script>
 
@@ -163,6 +217,49 @@ const titleId = `${triggerId}-modal-title`;
     font-size: 14.5px;
     line-height: 1.7;
     color: var(--text-secondary, #a9a29a);
+  }
+  .rk-sheet-handle { display: none; }
+
+  /* ---------- bottom sheet (mobile) ---------- */
+  @media (max-width: 700px) {
+    .rk-modal.sheet {
+      inline-size: 100vw;
+      max-width: none;
+      margin: auto 0 0;
+      max-height: 92vh;
+      border: 0;
+      border-radius: 22px 22px 0 0;
+    }
+    .rk-modal.sheet .rk-modal-inner {
+      padding: 8px 22px 44px;
+      transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    .rk-modal.sheet .rk-sheet-handle {
+      display: grid;
+      place-items: center;
+      padding: 10px 0 4px;
+      cursor: grab;
+      touch-action: none;
+    }
+    .rk-modal.sheet .rk-sheet-handle i {
+      width: 44px;
+      height: 4px;
+      border-radius: 999px;
+      background: var(--hairline, #3a342f);
+    }
+    .rk-modal.sheet .rk-sheet-handle:active { cursor: grabbing; }
+    .rk-modal.sheet .rk-modal-head { margin-bottom: 12px; }
+    @media (prefers-reduced-motion: no-preference) {
+      .rk-modal.sheet {
+        translate: 0 0;
+      }
+      @starting-style {
+        .rk-modal.sheet[open] {
+          translate: 0 100%;
+          opacity: 1;
+        }
+      }
+    }
   }
   .rk-modal-body :global(ul) {
     margin: 0;

@@ -1,6 +1,6 @@
 {
   "name": "astro-rabbit-kit",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "A kit of composable Astro components — copy-friendly primitives with scoped styles and vanilla-JS behaviour.",
   "type": "module",
   "exports": {
