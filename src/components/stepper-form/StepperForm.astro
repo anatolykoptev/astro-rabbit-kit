@@ -283,25 +283,25 @@ const {
     color: var(--text-secondary, #b5afa6);
     cursor: pointer;
   }
-  .consent input {
+  .field .consent input[type="checkbox"] {
     appearance: none; flex: none;
-    width: 18px; height: 18px; margin-top: 2px;
+    width: 18px; height: 18px; margin: 2px 0 0; padding: 0;
     border: 1px solid var(--hairline, #3a342f); border-radius: 5px;
     background: transparent; cursor: pointer;
     display: grid; place-content: center;
     transition: border-color .2s ease, background .2s ease;
   }
-  .consent input::after {
+  .field .consent input[type="checkbox"]::after {
     content: ""; width: 10px; height: 6px;
     border-left: 2px solid #fff; border-bottom: 2px solid #fff;
     transform: rotate(-45deg) translateY(-1px);
     opacity: 0;
   }
-  .consent input:checked {
+  .field .consent input[type="checkbox"]:checked {
     border-color: var(--accent, #d67a4e); background: var(--accent, #d67a4e);
   }
-  .consent input:checked::after { opacity: 1; }
-  .consent input:focus-visible { outline: 1px solid var(--accent, #d67a4e); outline-offset: 2px; }
+  .field .consent input[type="checkbox"]:checked::after { opacity: 1; }
+  .field .consent input[type="checkbox"]:focus-visible { outline: 1px solid var(--accent, #d67a4e); outline-offset: 2px; }
   /* Links inside set:html consent text never carry the scope attribute. */
   :global(.consent a) { color: var(--accent, #d67a4e); text-decoration: none; border-bottom: 1px solid color-mix(in srgb, var(--accent, #d67a4e) 40%, transparent); }
   :global(.consent a:hover) { border-bottom-color: var(--accent, #d67a4e); }
