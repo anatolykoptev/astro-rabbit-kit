@@ -157,6 +157,7 @@ const titleId = `${(triggerId || trigger || "modal").replace(/[^a-zA-Z0-9_-]/g, 
   }
   .rk-modal::backdrop {
     background: rgba(5, 4, 3, 0.72);
+    -webkit-backdrop-filter: blur(4px);
     backdrop-filter: blur(4px);
   }
   @media (prefers-reduced-motion: no-preference) {
