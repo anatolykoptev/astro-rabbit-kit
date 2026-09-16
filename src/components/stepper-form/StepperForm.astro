@@ -327,6 +327,7 @@ const {
     const review = form.querySelector(".review");
     const done = form.nextElementSibling;
     const DRAFT_KEY = form.dataset.draft;
+    const startedAt = Date.now();
     let cur = 0;
 
     const val = (n) => String(new FormData(form).get(n) || "").trim();
@@ -435,6 +436,7 @@ const {
           body: JSON.stringify({
             email: emailInput ? val(emailInput.name) : "",
             website: val("website"),
+            started_at: startedAt,
             source: form.dataset.source,
             note,
           }),
