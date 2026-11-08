@@ -68,7 +68,7 @@ Keyboard-only "skip to content" link. On activation, moves focus to `target` (de
 
 ### `StepperForm`
 
-Conversational multi-step form: one question per screen, progress indicator, per-step validation, auto-advance on radio choices, draft persistence in `localStorage`, a generated review step with per-field "Change" links, honeypot, and a success state that replaces the form.
+Conversational multi-step form: one question per screen, progress indicator, per-step validation, auto-advance on radio choices, draft persistence in `localStorage`, a generated review step with per-field "Change" links, an optional consent checkbox, honeypot, and a success state that replaces the form.
 
 ```astro
 <StepperForm
@@ -91,17 +91,20 @@ Conversational multi-step form: one question per screen, progress indicator, per
 
 - A review step is appended automatically after your `steps`.
 - `Enter` advances; `Back` returns; radio steps auto-advance after ~260ms.
-- Email fields validate on blur and before advancing.
+- Email fields validate on blur and before advancing. Step types are `text`, `email`, `tel`, `textarea` and `pills`; any step can carry a `hint` line.
+- `consent` (HTML string, e.g. links to a privacy page) adds a checkbox to the review step; submitting is blocked until it is ticked.
 - Answers persist to `localStorage` (`dr-stepper-<id>`) and clear on success.
 - Multiple instances on one page are isolated by `id`.
 
 **Payload contract** — POSTs JSON to `endpoint`:
 
 ```json
-{ "email": "<value of the first type=email field>", "website": "<honeypot>", "source": "<source>", "note": "<noteTemplate with {key} interpolation>" }
+{ "email": "<value of the first type=email field>", "website": "<honeypot>", "started_at": <ms timestamp when the form loaded>, "source": "<source>", "note": "<noteTemplate with {key} interpolation>" }
 ```
 
-**Step config** — see `src/types/index.d.ts`.
+`started_at` lets the server reject submissions that arrive implausibly fast. A non-2xx response shows an inline error and keeps the draft.
+
+**Step config** — the header comment of `src/components/stepper-form/StepperForm.astro` is the complete list of props and step fields; `src/types/index.d.ts` predates `tel`, `hint` and `consent`.
 
 ## Theming
 
@@ -135,8 +138,10 @@ For light-background sections, reassign the tokens on the section class — ever
 cd example && npm install && npm run dev
 ```
 
-The example site imports the kit via a `file:` dependency and demos every component.
+The example site imports the kit via a `file:` dependency and demos every component. `cd example && npm run build` builds it and is the only automated check the repository has: there is no test suite and no CI workflow.
+
+The package declares `astro` `^4.0.0 || ^5.0.0` as a peer dependency. Contribution rules are in [CONTRIBUTING.md](CONTRIBUTING.md); every document is listed in [docs/INDEX.md](docs/INDEX.md).
 
 ## License
 
-MIT
+MIT, see [LICENSE](LICENSE).
