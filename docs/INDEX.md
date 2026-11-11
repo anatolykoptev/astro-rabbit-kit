@@ -8,4 +8,4 @@
 | [CONTRIBUTING](../CONTRIBUTING.md) | How to run the demo, what a component change needs, commit and pull-request expectations |
 | [SECURITY](../SECURITY.md) | How to report a vulnerability |
 | [CODE_OF_CONDUCT](../CODE_OF_CONDUCT.md) | Contributor Covenant Code of Conduct |
-| [LICENSE](../LICENSE) | MIT licence |
+| [LICENSE](../LICENSE) | Apache License 2.0 |

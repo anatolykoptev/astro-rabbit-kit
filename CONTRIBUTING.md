@@ -36,4 +36,4 @@ history does, and explain the reason in the body. Keep a pull request to one cha
 
 ## Licence
 
-MIT ([LICENSE](LICENSE)); contributions are accepted under the same terms.
+Apache-2.0 ([LICENSE](LICENSE)); contributions are accepted under the same terms.

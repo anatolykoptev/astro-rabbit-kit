@@ -144,4 +144,4 @@ The package declares `astro` `^4.0.0 || ^5.0.0` as a peer dependency. Contributi
 
 ## License
 
-MIT, see [LICENSE](LICENSE).
+Apache-2.0, see [LICENSE](LICENSE).
