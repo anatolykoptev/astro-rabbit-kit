@@ -5,6 +5,10 @@ format. The repository has no release tags; `package.json` reads 0.2.0.
 
 ## [Unreleased]
 
+### Changed
+
+- Licence changed from MIT to Apache-2.0 from this version on.
+
 ## 2026-09-16
 
 ### Added
